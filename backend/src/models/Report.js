@@ -38,7 +38,10 @@ const Report = {
   async findAllByUser(userId, page = 1, limit = 10) {
     const offset = (page - 1) * limit;
     const [rows] = await pool.execute(
-      'SELECT id, created_at FROM reports WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+      `SELECT id, created_at,
+         JSON_EXTRACT(scores, '$.hireability_score') as hireability_score,
+         JSON_EXTRACT(scores, '$.behavior_type')     as behavior_type
+       FROM reports WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       [userId, limit, offset]
     );
     const [[{ total }]] = await pool.execute(

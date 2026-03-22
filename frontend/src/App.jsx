@@ -14,6 +14,7 @@ const Report = lazy(() => import('@/pages/Report'))
 const Profile = lazy(() => import('@/pages/Profile'))
 const Compare = lazy(() => import('@/pages/Compare'))
 const ResumeAnalyzer = lazy(() => import('@/pages/ResumeAnalyzer'))
+const PublicProfile = lazy(() => import('@/pages/PublicProfile'))
 
 const ProtectedRoute = ({ children }) => {
   const token = useAuthStore((s) => s.token)
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
+      <Route path="/u/:username" element={<PublicProfile />} />
         <Route element={<GuestRoute><AuthLayout /></GuestRoute>}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

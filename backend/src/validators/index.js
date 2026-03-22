@@ -24,7 +24,7 @@ const schemas = {
 
   connectAccount: Joi.object({
     platform: Joi.string()
-      .valid('github', 'gitlab', 'leetcode', 'codeforces', 'codechef', 'hackerrank', 'geeksforgeeks', 'linkedin', 'twitter')
+      .valid('github', 'gitlab', 'leetcode', 'codeforces', 'codechef', 'hackerrank', 'geeksforgeeks', 'linkedin', 'twitter', 'stackoverflow')
       .required(),
     username: Joi.string().min(1).max(100).required(),
     access_token: Joi.string().optional(),
@@ -32,7 +32,7 @@ const schemas = {
 
   analyze: Joi.object({
     platforms: Joi.array()
-      .items(Joi.string().valid('github', 'gitlab', 'leetcode', 'codeforces', 'codechef', 'hackerrank', 'linkedin', 'twitter'))
+      .items(Joi.string().valid('github', 'gitlab', 'leetcode', 'codeforces', 'codechef', 'hackerrank', 'linkedin', 'twitter', 'stackoverflow'))
       .optional(),
   }),
 };

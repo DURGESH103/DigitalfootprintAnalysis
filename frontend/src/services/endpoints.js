@@ -39,3 +39,15 @@ export const resumeAPI = {
     return api.post('/resume/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })
   },
 }
+
+// Notifications
+export const notificationsAPI = {
+  list: () => api.get('/notifications'),
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/all/read'),
+}
+
+// Public profile (no auth)
+export const publicAPI = {
+  getProfile: (username) => api.get(`/u/${username}`, { headers: { Authorization: undefined } }),
+}

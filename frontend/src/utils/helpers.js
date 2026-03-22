@@ -21,17 +21,18 @@ export const formatScore = (score) =>
 
 export const getPlatformIcon = (platform) => {
   const icons = {
-    github: '⚡',
-    gitlab: '🦊',
-    leetcode: '🧩',
-    codeforces: '🏆',
-    codechef: '👨‍🍳',
-    hackerrank: '💻',
-    geeksforgeeks: '🌿',
-    linkedin: '💼',
-    twitter: '🐦',
+    github: 'GH',
+    gitlab: 'GL',
+    leetcode: 'LC',
+    codeforces: 'CF',
+    codechef: 'CC',
+    hackerrank: 'HR',
+    geeksforgeeks: 'GG',
+    stackoverflow: 'SO',
+    linkedin: 'LI',
+    twitter: 'TW',
   }
-  return icons[platform] || '🔗'
+  return icons[platform] || '?'
 }
 
 export const getPlatformColor = (platform) => {
@@ -42,6 +43,7 @@ export const getPlatformColor = (platform) => {
     codeforces: '#3b82f6',
     codechef: '#10b981',
     hackerrank: '#22d3ee',
+    stackoverflow: '#f97316',
     linkedin: '#0ea5e9',
     twitter: '#60a5fa',
   }

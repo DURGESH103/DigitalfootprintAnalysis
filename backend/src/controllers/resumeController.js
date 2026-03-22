@@ -29,7 +29,29 @@ const uploadResume = asyncHandler(async (req, res) => {
 
   if (!req.file) return error(res, 'No file uploaded', 400);
 
-  const resumeText = fs.readFileSync(req.file.path, 'utf-8').substring(0, 5000);
+  const ext = path.extname(req.file.originalname).toLowerCase();
+  let resumeText = '';
+
+  try {
+    if (ext === '.pdf') {
+      // Read PDF as buffer and extract text via basic byte scanning
+      // For production use pdf-parse: npm install pdf-parse
+      const buffer = fs.readFileSync(req.file.path);
+      try {
+        const pdfParse = require('pdf-parse');
+        const parsed = await pdfParse(buffer);
+        resumeText = parsed.text.substring(0, 5000);
+      } catch {
+        // pdf-parse not installed — extract printable ASCII as fallback
+        resumeText = buffer.toString('latin1').replace(/[^\x20-\x7E\n]/g, ' ').replace(/\s+/g, ' ').substring(0, 5000);
+      }
+    } else {
+      resumeText = fs.readFileSync(req.file.path, 'utf-8').substring(0, 5000);
+    }
+  } finally {
+    fs.unlink(req.file.path, () => {});
+  }
+
   const normalizedList = await NormalizedData.findByUser(req.user.id);
   const userSkills = [...new Set(normalizedList.flatMap((n) => n.skill_tags))];
 
@@ -42,12 +64,10 @@ const uploadResume = asyncHandler(async (req, res) => {
       missing_skills: ['cloud', 'system-design'],
       resume_score: 65,
       suggestions: ['Add more project descriptions', 'Include measurable achievements'],
+      skill_gap_analysis: 'Run a full analysis first to improve accuracy.',
       generated_by: 'fallback',
     };
   }
-
-  // Cleanup uploaded file
-  fs.unlink(req.file.path, () => {});
 
   return success(res, { analysis, user_skills: userSkills });
 });

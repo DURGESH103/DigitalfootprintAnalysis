@@ -103,6 +103,20 @@ const normalizeTwitter = (data) => {
   return { platform: 'twitter', activity_score, consistency_score, skill_tags, engagement_score, growth_score };
 };
 
+const normalizeStackOverflow = (data) => {
+  const { reputation, answer_count, badge_counts, top_tags } = data;
+
+  const activity_score = Math.min(100, (answer_count / 200) * 100);
+  const consistency_score = Math.min(100, (reputation / 10000) * 100);
+  const skill_tags = (top_tags || []).slice(0, 8).map((t) => t.tag.toLowerCase());
+  const engagement_score = Math.min(100, (reputation / 5000) * 100);
+  const growth_score = Math.min(100,
+    ((badge_counts?.gold || 0) * 10 + (badge_counts?.silver || 0) * 3 + (badge_counts?.bronze || 0)) / 50 * 100
+  );
+
+  return { platform: 'stackoverflow', activity_score, consistency_score, skill_tags, engagement_score, growth_score };
+};
+
 const NORMALIZERS = {
   github: normalizeGitHub,
   leetcode: normalizeLeetCode,
@@ -111,6 +125,7 @@ const NORMALIZERS = {
   hackerrank: normalizeHackerRank,
   linkedin: normalizeLinkedIn,
   twitter: normalizeTwitter,
+  stackoverflow: normalizeStackOverflow,
 };
 
 const normalizePlatformData = (platform, rawData) => {

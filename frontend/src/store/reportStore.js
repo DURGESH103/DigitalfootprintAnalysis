@@ -25,6 +25,10 @@ export const useAnalysisStore = create((set) => ({
   addStep: (step) => set((s) => ({ steps: [...s.steps, step] })),
   updateStep: (id, update) =>
     set((s) => ({ steps: s.steps.map((st) => (st.id === id ? { ...st, ...update } : st)) })),
-  setProgress: (progress) => set({ progress }),
+  setProgress: (progressOrUpdater) => set((s) => ({
+    progress: typeof progressOrUpdater === 'function'
+      ? progressOrUpdater(s.progress)
+      : progressOrUpdater,
+  })),
   reset: () => set({ jobId: null, status: 'idle', steps: [], progress: 0 }),
 }))

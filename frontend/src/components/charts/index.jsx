@@ -12,10 +12,13 @@ const TOOLTIP_STYLE = {
 }
 
 // ─── Activity Line Chart ───────────────────────────────────────────────────────
+const PLACEHOLDER_ACTIVITY = Array.from({ length: 12 }, (_, i) => ({
+  month: `M${i + 1}`,
+  score: [42, 48, 45, 55, 60, 58, 65, 62, 70, 68, 74, 72][i],
+}))
+
 export function ActivityChart({ data = [] }) {
-  const chartData = data.length
-    ? data
-    : Array.from({ length: 12 }, (_, i) => ({ month: `M${i + 1}`, score: Math.floor(Math.random() * 40) + 40 }))
+  const chartData = data.length ? data : PLACEHOLDER_ACTIVITY
 
   return (
     <ResponsiveContainer width="100%" height={200}>
@@ -25,6 +28,7 @@ export function ActivityChart({ data = [] }) {
         <YAxis tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 100]} />
         <Tooltip {...TOOLTIP_STYLE} />
         <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#6366f1' }} />
+        {data.length === 0 && <Line type="monotone" dataKey="avg_hireability" stroke="#a855f7" strokeWidth={2} dot={false} name="Hireability" />}
       </LineChart>
     </ResponsiveContainer>
   )
@@ -54,14 +58,17 @@ export function SkillPieChart({ skills = [] }) {
 }
 
 // ─── Growth Bar Chart ─────────────────────────────────────────────────────────
+const PLACEHOLDER_GROWTH = [
+  { month: 'Jan', hireability: 52, problem_solving: 48 },
+  { month: 'Feb', hireability: 55, problem_solving: 50 },
+  { month: 'Mar', hireability: 58, problem_solving: 54 },
+  { month: 'Apr', hireability: 61, problem_solving: 57 },
+  { month: 'May', hireability: 65, problem_solving: 62 },
+  { month: 'Jun', hireability: 68, problem_solving: 65 },
+]
+
 export function GrowthChart({ data = [] }) {
-  const chartData = data.length
-    ? data
-    : Array.from({ length: 6 }, (_, i) => ({
-        month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i],
-        hireability: Math.floor(Math.random() * 30) + 50,
-        problem_solving: Math.floor(Math.random() * 30) + 45,
-      }))
+  const chartData = data.length ? data : PLACEHOLDER_GROWTH
 
   return (
     <ResponsiveContainer width="100%" height={200}>
@@ -104,23 +111,27 @@ export function PlatformRadarChart({ breakdown = {} }) {
 
 // ─── Comparison Bar Chart ─────────────────────────────────────────────────────
 export function ComparisonChart({ comparison = {} }) {
+  // Fix: average and top10 are absolute benchmark values, not derived from your_score
+  const AVERAGE_BENCHMARKS = { hireability_score: 45, problem_solving_score: 40, development_score: 42, consistency_score: 38, visibility_score: 30 }
+  const TOP10_BENCHMARKS   = { hireability_score: 80, problem_solving_score: 78, development_score: 82, consistency_score: 75, visibility_score: 70 }
+
   const data = Object.entries(comparison).map(([key, val]) => ({
     name: key.replace(/_score$/, '').replace(/_/g, ' '),
     you: val.your_score || 0,
-    average: (val.your_score || 0) - (val.vs_average || 0),
-    top10: (val.your_score || 0) - (val.vs_top10 || 0),
+    average: AVERAGE_BENCHMARKS[key] || 45,
+    top10: TOP10_BENCHMARKS[key] || 75,
   }))
 
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 60, bottom: 0 }} barGap={3}>
+      <BarChart data={data} layout="vertical" margin={{ top: 5, right: 20, left: 80, bottom: 0 }} barGap={3}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
         <XAxis type="number" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 100]} />
-        <YAxis type="category" dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} width={75} />
         <Tooltip {...TOOLTIP_STYLE} />
-        <Bar dataKey="you" fill="#6366f1" radius={[0, 3, 3, 0]} name="You" />
-        <Bar dataKey="average" fill="#475569" radius={[0, 3, 3, 0]} name="Average Dev" />
-        <Bar dataKey="top10" fill="#a855f7" radius={[0, 3, 3, 0]} name="Top 10%" />
+        <Bar dataKey="you"     fill="#6366f1" radius={[0, 3, 3, 0]} name="You" />
+        <Bar dataKey="average" fill="#475569" radius={[0, 3, 3, 0]} name="Avg Dev" />
+        <Bar dataKey="top10"   fill="#a855f7" radius={[0, 3, 3, 0]} name="Top 10%" />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', color: '#94a3b8' }} />
       </BarChart>
     </ResponsiveContainer>

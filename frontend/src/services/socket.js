@@ -1,22 +1,31 @@
 import { io } from 'socket.io-client'
 import { useAuthStore } from '@/store/authStore'
 
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'
+
 let socket = null
 
 export const connectSocket = () => {
   const token = useAuthStore.getState().token
   if (socket?.connected) return socket
 
-  socket = io('http://localhost:3000', {
+  // Disconnect stale socket before creating a new one
+  if (socket) {
+    socket.disconnect()
+    socket = null
+  }
+
+  socket = io(SOCKET_URL, {
     auth: { token },
     transports: ['websocket', 'polling'],
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,
+    reconnectionDelayMax: 10000,
   })
 
-  socket.on('connect', () => console.log('Socket connected'))
-  socket.on('disconnect', () => console.log('Socket disconnected'))
-  socket.on('connect_error', (e) => console.warn('Socket error:', e.message))
+  socket.on('connect', () => console.log('[socket] connected:', socket.id))
+  socket.on('disconnect', (reason) => console.log('[socket] disconnected:', reason))
+  socket.on('connect_error', (e) => console.warn('[socket] error:', e.message))
 
   return socket
 }

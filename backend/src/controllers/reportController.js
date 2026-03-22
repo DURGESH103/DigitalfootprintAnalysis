@@ -1,5 +1,4 @@
 const Report = require('../models/Report');
-const { cache } = require('../config/redis');
 const { getWeeklyTrends, getMonthlyGrowth, getPlatformTrends } = require('../services/analytics');
 const { computeScores, compareToBenchmarks } = require('../services/scorer');
 const { NormalizedData } = require('../models/PlatformData');
@@ -8,15 +7,10 @@ const { asyncHandler } = require('../middleware/errorHandler');
 
 const getLatestReport = asyncHandler(async (req, res) => {
   const userId = req.params.userId || req.user.id;
-  const cacheKey = `report:latest:${userId}`;
-
-  const cached = await cache.get(cacheKey);
-  if (cached) return success(res, cached);
 
   const report = await Report.findLatestByUser(userId);
   if (!report) return error(res, 'No report found. Run analysis first.', 404);
 
-  await cache.set(cacheKey, report, 300);
   return success(res, report);
 });
 
@@ -28,16 +22,16 @@ const getReportById = asyncHandler(async (req, res) => {
 
 const listReports = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
-  const { rows, total } = await Report.findAllByUser(req.user.id, parseInt(page), parseInt(limit));
+  const { rows, total } = await Report.findAllByUser(
+    req.user.id,
+    parseInt(page, 10),
+    parseInt(limit, 10)
+  );
   return paginated(res, rows, total, page, limit);
 });
 
 const getAnalytics = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const cacheKey = `analytics:${userId}`;
-
-  const cached = await cache.get(cacheKey);
-  if (cached) return success(res, cached);
 
   const [weekly, monthly, platformTrends] = await Promise.all([
     getWeeklyTrends(userId),
@@ -45,9 +39,11 @@ const getAnalytics = asyncHandler(async (req, res) => {
     getPlatformTrends(userId),
   ]);
 
-  const data = { weekly_trends: weekly, monthly_growth: monthly, platform_trends: platformTrends };
-  await cache.set(cacheKey, data, 600);
-  return success(res, data);
+  return success(res, {
+    weekly_trends: weekly,
+    monthly_growth: monthly,
+    platform_trends: platformTrends,
+  });
 });
 
 const getComparison = asyncHandler(async (req, res) => {

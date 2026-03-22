@@ -194,8 +194,22 @@ export default function Report() {
                 onClick={() => navigate(`/report/${r.id}`)}
                 className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-bg-hover transition-colors text-left"
               >
-                <span className="text-sm text-text-secondary">Report #{r.id}</span>
-                <span className="text-xs text-text-muted">{new Date(r.created_at).toLocaleDateString()}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-text-secondary">Report #{r.id}</span>
+                  {r.behavior_type && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-brand-glow text-brand border border-border-brand">
+                      {String(r.behavior_type).replace(/"/g, '')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  {r.hireability_score != null && (
+                    <span className="text-xs font-mono text-text-secondary">
+                      {parseFloat(r.hireability_score).toFixed(1)} hire
+                    </span>
+                  )}
+                  <span className="text-xs text-text-muted">{new Date(r.created_at).toLocaleDateString()}</span>
+                </div>
               </button>
             ))}
           </div>

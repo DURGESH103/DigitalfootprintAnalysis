@@ -48,6 +48,14 @@ export const PLATFORMS = [
     description: 'Badges, scores, certificates',
   },
   {
+    id: 'stackoverflow',
+    label: 'Stack Overflow',
+    category: 'coding',
+    placeholder: 'display-name',
+    color: '#f97316',
+    description: 'Reputation, badges, top tags',
+  },
+  {
     id: 'linkedin',
     label: 'LinkedIn',
     category: 'social',
