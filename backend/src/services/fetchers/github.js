@@ -6,7 +6,10 @@ const githubClient = (token) =>
   axios.create({
     baseURL: BASE,
     headers: {
-      Authorization: `Bearer ${token || process.env.GITHUB_TOKEN}`,
+      // Use token if provided, otherwise make unauthenticated request (60 req/hr limit)
+      ...(token && token !== 'your_github_personal_access_token'
+        ? { Authorization: `Bearer ${token}` }
+        : {}),
       Accept: 'application/vnd.github.v3+json',
     },
   });

@@ -12,6 +12,21 @@ const CATEGORIES = [
   { id: 'social', label: 'Social', icon: '🌐' },
 ]
 
+// Strip full URLs down to just the username/handle
+// e.g. "https://github.com/DURGESH103" -> "DURGESH103"
+const extractUsername = (raw) => {
+  const trimmed = raw.trim()
+  try {
+    const url = new URL(trimmed)
+    // Last non-empty path segment is the username
+    const parts = url.pathname.split('/').filter(Boolean)
+    return parts[parts.length - 1] || trimmed
+  } catch {
+    // Not a URL — return as-is
+    return trimmed
+  }
+}
+
 export default function Accounts() {
   const [connected, setConnected] = useState({})
   const [inputs, setInputs] = useState({})
@@ -36,14 +51,15 @@ export default function Accounts() {
   }
 
   const connect = async (platform) => {
-    const username = inputs[platform]?.trim()
-    if (!username) return toast.error('Enter a username')
+    const raw = inputs[platform]?.trim()
+    if (!raw) return toast.error('Enter a username or profile URL')
+    const username = extractUsername(raw)
     setLoading({ ...loading, [platform]: 'connecting' })
     try {
       await accountsAPI.connect({ platform, username })
       setConnected({ ...connected, [platform]: { platform, username } })
       setInputs({ ...inputs, [platform]: '' })
-      toast.success(`${platform} connected!`)
+      toast.success(`${platform} connected as ${username}!`)
     } catch (e) {
       toast.error(extractError(e))
     } finally {
@@ -138,7 +154,7 @@ export default function Accounts() {
                       <div className="flex gap-2">
                         <input
                           className="input-field flex-1 py-2 text-xs"
-                          placeholder={platform.placeholder}
+                          placeholder={`${platform.placeholder} or full URL`}
                           value={inputs[platform.id] || ''}
                           onChange={(e) => setInputs({ ...inputs, [platform.id]: e.target.value })}
                           onKeyDown={(e) => e.key === 'Enter' && connect(platform.id)}

@@ -20,6 +20,7 @@ export const accountsAPI = {
 export const analysisAPI = {
   trigger: (platforms) => api.post('/analysis', { platforms }),
   jobStatus: (jobId) => api.get(`/analysis/job/${jobId}`),
+  clearLock: () => api.delete('/analysis/lock'),
 }
 
 // Reports

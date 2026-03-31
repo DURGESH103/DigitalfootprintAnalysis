@@ -30,7 +30,9 @@ const User = {
 
   async saveRefreshToken(userId, token) {
     await pool.execute(
-      'INSERT INTO refresh_tokens (user_id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?',
+      `INSERT INTO refresh_tokens (user_id, token)
+       VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE token = ?, created_at = NOW()`,
       [userId, token, token]
     );
   },

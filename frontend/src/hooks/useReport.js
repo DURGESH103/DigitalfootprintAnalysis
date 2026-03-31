@@ -28,6 +28,9 @@ export const useReport = (reportId) => {
   return { report: currentReport, loading, error }
 }
 
+// Track which userIds we've already fetched so we don't spam 404s
+const fetchedUsers = new Set()
+
 export const useLatestReport = (userId) => {
   const { currentReport, setReport } = useReportStore()
   const [loading, setLoading] = useState(false)
@@ -35,14 +38,18 @@ export const useLatestReport = (userId) => {
 
   useEffect(() => {
     if (!userId) return
+    // Already fetched for this user — skip
+    if (fetchedUsers.has(userId)) return
+
     const fetch = async () => {
       setLoading(true)
       setError(null)
       try {
         const { data } = await reportsAPI.getLatest(userId)
         setReport(data.data)
+        fetchedUsers.add(userId)
       } catch (e) {
-        // 404 = no reports yet, perfectly normal for new users
+        fetchedUsers.add(userId) // mark fetched even on 404 so we don't retry
         if (e?.response?.status !== 404) setError(extractError(e))
       } finally {
         setLoading(false)
@@ -52,4 +59,9 @@ export const useLatestReport = (userId) => {
   }, [userId])
 
   return { report: currentReport, loading, error }
+}
+
+// Call this after a new analysis completes to force a re-fetch
+export const invalidateReportCache = (userId) => {
+  fetchedUsers.delete(userId)
 }

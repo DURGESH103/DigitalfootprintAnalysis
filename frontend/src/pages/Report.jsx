@@ -22,7 +22,13 @@ export default function Report() {
   const reportRef = useRef(null)
   const navigate = useNavigate()
 
+  const hasFetched = useRef(false)
+  const fetchKey = `${reportId}-${user?.id}`
+  const lastFetchKey = useRef(null)
+
   useEffect(() => {
+    if (lastFetchKey.current === fetchKey) return // same params, skip
+    lastFetchKey.current = fetchKey
     loadReport()
     loadList()
   }, [reportId, user?.id])

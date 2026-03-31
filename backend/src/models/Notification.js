@@ -10,9 +10,11 @@ const Notification = {
   },
 
   async findByUser(userId, limit = 20) {
-    const [rows] = await pool.execute(
-      'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ?',
-      [userId, limit]
+    // Use query() with escaped values to avoid mysql2 LIMIT prepared-statement bug
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const [rows] = await pool.query(
+      `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ${safeLimit}`,
+      [userId]
     );
     return rows.map((r) => ({ ...r, meta: r.meta ? JSON.parse(r.meta) : null }));
   },
@@ -36,7 +38,7 @@ const Notification = {
       'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND read_at IS NULL',
       [userId]
     );
-    return count;
+    return parseInt(count, 10);
   },
 };
 

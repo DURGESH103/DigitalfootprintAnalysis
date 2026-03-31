@@ -1,5 +1,18 @@
 const { pool } = require('../config/database');
 
+// mysql2 may return JSON columns as already-parsed objects or as strings
+const parseJSON = (val) => {
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'object') return val; // already parsed by mysql2
+  try { return JSON.parse(val); } catch { return null; }
+};
+
+const parseReport = (row) => ({
+  ...row,
+  insights: parseJSON(row.insights),
+  scores: parseJSON(row.scores),
+});
+
 const Report = {
   async create(userId, insights, scores) {
     const [result] = await pool.execute(
@@ -15,11 +28,7 @@ const Report = {
       [userId]
     );
     if (!rows[0]) return null;
-    return {
-      ...rows[0],
-      insights: JSON.parse(rows[0].insights),
-      scores: JSON.parse(rows[0].scores),
-    };
+    return parseReport(rows[0]);
   },
 
   async findById(reportId, userId) {
@@ -28,27 +37,24 @@ const Report = {
       [reportId, userId]
     );
     if (!rows[0]) return null;
-    return {
-      ...rows[0],
-      insights: JSON.parse(rows[0].insights),
-      scores: JSON.parse(rows[0].scores),
-    };
+    return parseReport(rows[0]);
   },
 
   async findAllByUser(userId, page = 1, limit = 10) {
-    const offset = (page - 1) * limit;
-    const [rows] = await pool.execute(
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
+    const safeOffset = Math.max((parseInt(page, 10) - 1) * safeLimit, 0);
+    const [rows] = await pool.query(
       `SELECT id, created_at,
          JSON_EXTRACT(scores, '$.hireability_score') as hireability_score,
          JSON_EXTRACT(scores, '$.behavior_type')     as behavior_type
-       FROM reports WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [userId, limit, offset]
+       FROM reports WHERE user_id = ? ORDER BY created_at DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`,
+      [userId]
     );
     const [[{ total }]] = await pool.execute(
       'SELECT COUNT(*) as total FROM reports WHERE user_id = ?',
       [userId]
     );
-    return { rows, total };
+    return { rows, total: parseInt(total, 10) };
   },
 };
 

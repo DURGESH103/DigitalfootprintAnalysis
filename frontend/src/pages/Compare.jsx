@@ -14,7 +14,10 @@ export default function Compare() {
   useEffect(() => {
     reportsAPI.compare()
       .then(({ data }) => setData(data.data))
-      .catch((e) => { if (e?.response?.status !== 404) toast.error(extractError(e)) })
+      .catch((e) => {
+        // 404 = no analysis data yet, not an error worth showing
+        if (e?.response?.status !== 404) toast.error(extractError(e))
+      })
       .finally(() => setLoading(false))
   }, [])
 

@@ -30,6 +30,18 @@ export default function Dashboard() {
       setJobId(data.data.jobId)
       navigate('/analysis')
     } catch (e) {
+      if (e?.response?.status === 409) {
+        try {
+          await analysisAPI.clearLock()
+          const { data } = await analysisAPI.trigger()
+          setJobId(data.data.jobId)
+          navigate('/analysis')
+          return
+        } catch (retryErr) {
+          toast.error(extractError(retryErr))
+          return
+        }
+      }
       toast.error(extractError(e))
     } finally {
       setAnalyzing(false)

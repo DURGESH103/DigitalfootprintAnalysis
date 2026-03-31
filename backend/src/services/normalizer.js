@@ -10,7 +10,8 @@ const normalizeGitHub = (data) => {
   const activity_score = Math.min(100, (recentRepos / 30) * 100);
 
   // Consistency: weeks with commits in last year
-  const activeWeeks = (commit_activity || []).filter((w) => w.total > 0).length;
+  const activity = Array.isArray(commit_activity) ? commit_activity : [];
+  const activeWeeks = activity.filter((w) => w.total > 0).length;
   const consistency_score = Math.min(100, (activeWeeks / 52) * 100);
 
   const totalBytes = Object.values(languages).reduce((s, v) => s + v, 0);
